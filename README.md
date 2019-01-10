@@ -1,2 +1,2 @@
 # ohoon
-Post Search Manager helps searching post status more easier
+PostManager helps searching post status more easier
