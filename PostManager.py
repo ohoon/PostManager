@@ -52,17 +52,21 @@ def result(f, l):
                         s_data = re.findall("\(수령인:.*\)", str(soup))
                         s_status = re.sub("\(수령인:|\)", '', s_data[0])
                         succT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                        totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
                         count += 1
                     elif status == "배달준비":
                         retrnT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                        totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
                         rcount += 1
                     elif status == "" or status == "도착":
                         retrnT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                        totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
                         rcount += 1
                     elif status == "미배달":
                         r_data = re.findall("<!-- 미배달사유 -->.*\s*.*\s*.*<!-- //미배달사유 -->", str(soup))
                         r_status = re.sub("<.+?>|\s", '', r_data[len(r_data) - 1])
                         retrnT.insert("", "end", text="", values=[pnum, name, r_status, date], iid=pnum)
+                        totalT.insert("", "end", text="", values=[pnum, name, r_status, date], iid=pnum)
                         rcount += 1
 
             resultL.configure(text="배달완료 " + str(count) + "건\t미배달 " + str(rcount) + "건\t총 " + str(count + rcount) + "건")
@@ -71,6 +75,8 @@ def result(f, l):
         webbrowser.open("https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=" + str(succT.focus()) + "&displayHeader=N")
     def pop_up_r(event):
         webbrowser.open("https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=" + str(retrnT.focus()) + "&displayHeader=N")
+    def pop_up_t(event):
+        webbrowser.open("https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=" + str(totalT.focus()) + "&displayHeader=N")
 
     def sort_column(tv, col, reverse):
         l = [(tv.set(k, col), k) for k in tv.get_children('')]
@@ -85,7 +91,7 @@ def result(f, l):
 
     resultC = tk.Toplevel(mainC)
     resultC.title("조회 결과")
-    resultC.geometry("736x460+495+300")
+    resultC.geometry("1105x460+100+320")
     resultC.resizable(0, 0)
 
     succF = tk.Frame(resultC, bd=5)
@@ -126,6 +132,25 @@ def result(f, l):
     retrnT.heading("#4", text="처리일자", anchor="center", command=lambda: sort_column(retrnT, "#4", False))
     retrnT.bind('<<TreeviewOpen>>', pop_up_r)
 
+    totalF = tk.Frame(resultC, bd=5)
+    totalF.grid(column=4, columnspan=2, row=0, rowspan=4)
+    totalL = tk.Label(totalF, text="통합", font="함초롬돋움 12")
+    totalL.grid(column=0, columnspan=2, row=0)
+
+    totalT = tkinter.ttk.Treeview(totalF, columns=["", "", "", ""], height=18)
+    totalT.grid(column=0, columnspan=2, row=1)
+    totalT.yview()
+    totalT["show"] = "headings"
+    totalT.column("#1", width=120, anchor="center")
+    totalT.heading("#1", text="등기번호", anchor="center", command=lambda: sort_column(totalT, "#1", False))
+    totalT.column("#2", width=45, anchor="center")
+    totalT.heading("#2", text="성명", anchor="center", command=lambda: sort_column(totalT, "#2", False))
+    totalT.column("#3", width=110, anchor="center")
+    totalT.heading("#3", text="수령인/처리현황", anchor="center", command=lambda: sort_column(totalT, "#3", False))
+    totalT.column("#4", width=80, anchor="center")
+    totalT.heading("#4", text="수령/처리일", anchor="center", command=lambda: sort_column(totalT, "#4", False))
+    totalT.bind('<<TreeviewOpen>>', pop_up_t)
+
     count = 0
     rcount = 0
     for pnum in range(f, l + 1):
@@ -142,35 +167,39 @@ def result(f, l):
                 s_data = re.findall("\(수령인:.*\)", str(soup))
                 s_status = re.sub("\(수령인:|\)", '', s_data[0])
                 succT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
                 count += 1
             elif status == "배달준비":
                 retrnT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
                 rcount += 1
             elif status == "" or status == "도착":
                 retrnT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
                 rcount += 1
             elif status == "미배달":
                 r_data = re.findall("<!-- 미배달사유 -->.*\s*.*\s*.*<!-- //미배달사유 -->", str(soup))
                 r_status = re.sub("<.+?>|\s", '', r_data[len(r_data) - 1])
                 retrnT.insert("", "end", text="", values=[pnum, name, r_status, date], iid=pnum)
+                totalT.insert("", "end", text="", values=[pnum, name, r_status, date], iid=pnum)
                 rcount += 1
 
     resultF = tk.Frame(resultC)
-    resultF.grid(column=0, columnspan=4, row=4)
-    resultL = tk.Label(resultF, text="배달완료 " + str(count) + "건\t미배달 " + str(rcount) + "건\t총 " + str(count + rcount) + "건", font="함초롬돋움 10", anchor="center", padx=25)
-    resultL.grid(column=0, row=0)
+    resultF.grid(column=0, columnspan=6, row=4)
+    resultL = tk.Label(resultF, text="배달완료 " + str(count) + "건\t미배달 " + str(rcount) + "건\t총 " + str(count + rcount) + "건", font="함초롬돋움 10", anchor="center", padx=200)
+    resultL.grid(column=0, columnspan=2, row=0)
     r_firstE = tk.Entry(resultF)
-    r_firstE.grid(column=1, row=0, padx=5)
+    r_firstE.grid(column=2, row=0, padx=5)
     r_Label = tk.Label(resultF, text="~")
-    r_Label.grid(column=2, row=0)
+    r_Label.grid(column=3, row=0)
     r_lastE = tk.Entry(resultF)
-    r_lastE.grid(column=3, row=0, padx=5)
+    r_lastE.grid(column=4, row=0, padx=5)
     resultB = tk.Button(resultF, text="이어서 조회", width=10, font="함초롬돋움 10", command=add)
-    resultB.grid(column=4, row=0)
+    resultB.grid(column=5, row=0)
 
 mainC = tk.Tk()
 mainC.title("등기번호 조회기")
-mainC.geometry("230x130+250+300")
+mainC.geometry("230x130+100+150")
 mainC.resizable(0, 0)
 
 mainL = tk.Label(mainC, text="등기번호(13자리)", font="함초롬돋움 15")
