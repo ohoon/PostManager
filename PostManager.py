@@ -59,12 +59,12 @@ def result(f, l):
                             totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
                             count += 1
                     elif status == "배달준비":
-                        retrnT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
-                        totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                        retrnT.insert("", "end", text="", values=[pnum, name, status, date], iid=pnum)
+                        totalT.insert("", "end", text="", values=[pnum, name, status, date], iid=pnum)
                         rcount += 1
                     elif status == "" or status == "도착":
-                        retrnT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
-                        totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                        retrnT.insert("", "end", text="", values=[pnum, name, status, date], iid=pnum)
+                        totalT.insert("", "end", text="", values=[pnum, name, status, date], iid=pnum)
                         rcount += 1
                     elif status == "미배달":
                         try:
@@ -178,12 +178,12 @@ def result(f, l):
                 totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
                 count += 1
             elif status == "배달준비":
-                retrnT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
-                totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                retrnT.insert("", "end", text="", values=[pnum, name, status, date], iid=pnum)
+                totalT.insert("", "end", text="", values=[pnum, name, status, date], iid=pnum)
                 rcount += 1
             elif status == "" or status == "도착":
-                retrnT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
-                totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                retrnT.insert("", "end", text="", values=[pnum, name, status, date], iid=pnum)
+                totalT.insert("", "end", text="", values=[pnum, name, status, date], iid=pnum)
                 rcount += 1
             elif status == "미배달":
                 r_data = re.findall("<!-- 미배달사유 -->.*\s*.*\s*.*<!-- //미배달사유 -->", str(soup))
