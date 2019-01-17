@@ -49,11 +49,15 @@ def result(f, l):
                     status = re.sub("\(.*\)", '', data[3].get_text())
 
                     if status == "배달완료" or status == "교부":
-                        s_data = re.findall("\(수령인:.*\)", str(soup))
-                        s_status = re.sub("\(수령인:|\)", '', s_data[0])
-                        succT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
-                        totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
-                        count += 1
+                        try:
+                            s_data = re.findall("\(수령인:.*\)", str(soup))
+                            s_status = re.sub("\(수령인:|\)", '', s_data[0])
+                        except:
+                            s_status = "Error"
+                        finally:
+                            succT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                            totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
+                            count += 1
                     elif status == "배달준비":
                         retrnT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
                         totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
@@ -63,11 +67,15 @@ def result(f, l):
                         totalT.insert("", "end", text="", values=[pnum, name, s_status, date], iid=pnum)
                         rcount += 1
                     elif status == "미배달":
-                        r_data = re.findall("<!-- 미배달사유 -->.*\s*.*\s*.*<!-- //미배달사유 -->", str(soup))
-                        r_status = re.sub("<.+?>|\s", '', r_data[len(r_data) - 1])
-                        retrnT.insert("", "end", text="", values=[pnum, name, r_status, date], iid=pnum)
-                        totalT.insert("", "end", text="", values=[pnum, name, r_status, date], iid=pnum)
-                        rcount += 1
+                        try:
+                            r_data = re.findall("<!-- 미배달사유 -->.*\s*.*\s*.*<!-- //미배달사유 -->", str(soup))
+                            r_status = re.sub("<.+?>|\s", '', r_data[len(r_data) - 1])
+                        except:
+                            r_status = "Error"
+                        finally:
+                            retrnT.insert("", "end", text="", values=[pnum, name, r_status, date], iid=pnum)
+                            totalT.insert("", "end", text="", values=[pnum, name, r_status, date], iid=pnum)
+                            rcount += 1
 
             resultL.configure(text="배달완료 " + str(count) + "건\t미배달 " + str(rcount) + "건\t총 " + str(count + rcount) + "건")
 
