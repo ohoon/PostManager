@@ -56,7 +56,7 @@ def result():
                         s_a_status = ""
                         r_a_status = ""
 
-                        if a_status == "배달완료" or a_status == "교부":
+                        if (a_status == "배달완료" and a_data[3].get_text().find('반송배달') < 0) or a_status == "교부":
                             try:
                                 s_a_data = re.findall("\(수령인:.*\)", str(a_soup))
                                 s_a_status = re.sub("\(수령인:|\)", '', s_a_data[0])
@@ -519,7 +519,7 @@ def result():
                 date = str(data[1])[4:-5].split("<br/>")[1]
                 status = re.sub("\(.*\)", '', data[3].get_text())
 
-                if status == "배달완료" or status == "교부":
+                if (status == "배달완료" and data[3].get_text().find('반송배달') < 0) or status == "교부":
                     try:
                         s_data = re.findall("\(수령인:.*\)", str(soup))
                         s_status = re.sub("\(수령인:|\)", '', s_data[0])
@@ -537,7 +537,7 @@ def result():
                     retrnT.insert("", "end", text="", values=[pnum, name, status, date], iid=pnum)
                     totalT.insert("", "end", text="", values=[pnum, name, status, date], iid=pnum)
                     rcount += 1
-                elif status == "미배달":
+                else:
                     try:
                         r_data = re.findall("<!-- 미배달사유 -->.*\s*.*\s*.*<!-- //미배달사유 -->", str(soup))
                         r_status = re.sub("<.+?>|\s", '', r_data[len(r_data) - 1])
