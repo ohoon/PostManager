@@ -262,104 +262,106 @@ def result():
                     nm_row += 1
                 for i in range(nm_row, sheet.max_row + 1):
                     n_data += [sheet[i][nm_col - 1].value]
-                for tv_nm in totalT.get_children():
-                    index += 1
-                    swt = False
-                    driver = webdriver.Ie('IEDriverServer.exe')
-                    webdriver.IeOptions()
-                    driver.get(
-                        'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=' + tv_nm + '&displayHeader=N')
-                    main_window_handle = driver.current_window_handle
-                    driver.execute_script("fnPopupMaskingSolv()")
-                    for handle in driver.window_handles:
-                        if handle != main_window_handle:
-                            driver.switch_to.window(handle)
-                            break
-                    for ex_nm in n_data:
-                        if ex_nm:
-                            msk_nm = ex_nm[0:1] + "*" + ex_nm[2:]
-                            if totalT.set(tv_nm, "#2") == msk_nm:
-                                driver.execute_script('SetExpCookie("TraceCnt","0",10);')
-                                elem = driver.find_element_by_name('senderNm_masking')
-                                elem.send_keys("치")
-                                elem = driver.find_element_by_name('receverNm_masking')
-                                elem.send_keys(ex_nm[1])
-                                driver.execute_script("return verifyNms(event);")
-                                try:
-                                    WebDriverWait(driver, 5).until(EC.alert_is_present())
-                                    Alert(driver).accept()
-                                    continue
-                                except NoSuchWindowException or TimeoutException:
-                                    um_pnum = tv_nm
-                                    um_status = totalT.set(tv_nm, "#3")
-                                    swt = True
-                                    if n_data.count(ex_nm) > 1:
-                                        um_resultT.insert("", "end", text="",
-                                                          values=[index, ex_nm, um_pnum, um_status, "동명이인 존재"],
-                                                          iid=index, tags=('alert',))
-                                        a_cnt += 1
-                                    elif ex_nm in s_list:
-                                        for um_list in um_resultT.get_children():
-                                            if um_resultT.set(um_list, "#2") == ex_nm:
-                                                um_resultT.set(um_list, "#5", "수신인 중복")
-                                                um_resultT.item(um_list, tags=('alert',))
-                                                s_cnt -= 1
-                                                a_cnt += 1
-                                        um_resultT.insert("", "end", text="",
-                                                          values=[index, ex_nm, um_pnum, um_status, "수신인 중복"],
-                                                          iid=index, tags=('alert',))
-                                        a_cnt += 1
-                                    else:
-                                        um_resultT.insert("", "end", text="",
-                                                          values=[index, ex_nm, um_pnum, um_status, ""], iid=index,
-                                                          tags=('success',))
-                                        s_cnt += 1
-                                        s_list += [ex_nm]
+                try:
+                    for tv_nm in totalT.get_children():
+                        index += 1
+                        swt = False
+                        driver = webdriver.Ie('IEDriverServer.exe')
+                        webdriver.IeOptions()
+                        driver.get(
+                            'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=' + tv_nm + '&displayHeader=N')
+                        main_window_handle = driver.current_window_handle
+                        driver.execute_script("fnPopupMaskingSolv()")
+                        for handle in driver.window_handles:
+                            if handle != main_window_handle:
+                                driver.switch_to.window(handle)
+                                break
+                        for ex_nm in n_data:
+                            if ex_nm:
+                                msk_nm = ex_nm[0:1] + "*" + ex_nm[2:]
+                                if totalT.set(tv_nm, "#2") == msk_nm:
+                                    driver.execute_script('SetExpCookie("TraceCnt","0",10);')
+                                    elem = driver.find_element_by_name('senderNm_masking')
+                                    elem.send_keys("치")
+                                    elem = driver.find_element_by_name('receverNm_masking')
+                                    elem.send_keys(ex_nm[1])
+                                    driver.execute_script("return verifyNms(event);")
+                                    try:
+                                        WebDriverWait(driver, 5).until(EC.alert_is_present())
+                                        Alert(driver).accept()
+                                        continue
+                                    except NoSuchWindowException or TimeoutException:
+                                        um_pnum = tv_nm
+                                        um_status = totalT.set(tv_nm, "#3")
+                                        swt = True
+                                        if n_data.count(ex_nm) > 1:
+                                            um_resultT.insert("", "end", text="",
+                                                              values=[index, ex_nm, um_pnum, um_status, "동명이인 존재"],
+                                                              iid=index, tags=('alert',))
+                                            a_cnt += 1
+                                        elif ex_nm in s_list:
+                                            for um_list in um_resultT.get_children():
+                                                if um_resultT.set(um_list, "#2") == ex_nm:
+                                                    um_resultT.set(um_list, "#5", "수신인 중복")
+                                                    um_resultT.item(um_list, tags=('alert',))
+                                                    s_cnt -= 1
+                                                    a_cnt += 1
+                                            um_resultT.insert("", "end", text="",
+                                                              values=[index, ex_nm, um_pnum, um_status, "수신인 중복"],
+                                                              iid=index, tags=('alert',))
+                                            a_cnt += 1
+                                        else:
+                                            um_resultT.insert("", "end", text="",
+                                                              values=[index, ex_nm, um_pnum, um_status, ""], iid=index,
+                                                              tags=('success',))
+                                            s_cnt += 1
+                                            s_list += [ex_nm]
 
-                                    driver.switch_to.window(main_window_handle)
-                                    if p_iv.get():
-                                        driver.execute_script("window.print();")
-                                        try:
-                                            WebDriverWait(driver, 5).until(EC.alert_is_present())
-                                            Alert(driver).accept()
-                                            time.sleep(5)
+                                        driver.switch_to.window(main_window_handle)
+                                        if p_iv.get():
+                                            driver.execute_script("window.print();")
+                                            try:
+                                                WebDriverWait(driver, 5).until(EC.alert_is_present())
+                                                Alert(driver).accept()
+                                                time.sleep(5)
+                                                driver.close()
+                                                break
+                                            except TimeoutException:
+                                                print("print error")
+                                        else:
                                             driver.close()
                                             break
-                                        except TimeoutException:
-                                            print("print error")
-                                    else:
-                                        driver.close()
-                                        break
-                    if not swt:
-                        um_resultT.insert("", "end", text="",
-                                          values=[index, totalT.set(tv_nm, "#2"), totalT.set(tv_nm, "#1"),
-                                                  totalT.set(tv_nm, "#3"), "성명 불일치"], iid=index, tags=('fail',))
-                        f_cnt += 1
-                        driver.close()
-                        driver.switch_to.window(main_window_handle)
-                        driver.close()
+                        if not swt:
+                            um_resultT.insert("", "end", text="",
+                                              values=[index, totalT.set(tv_nm, "#2"), totalT.set(tv_nm, "#1"),
+                                                      totalT.set(tv_nm, "#3"), "성명 불일치"], iid=index, tags=('fail',))
+                            f_cnt += 1
+                            driver.close()
+                            driver.switch_to.window(main_window_handle)
+                            driver.close()
+                    if x_iv.get():
+                        new_workbook = openpyxl.Workbook()
+                        new_sheet = new_workbook.active
+                        new_sheet.cell(row=1, column=1).value = '#'
+                        new_sheet.cell(row=1, column=2).value = '성명'
+                        new_sheet.cell(row=1, column=3).value = '등기번호'
+                        new_sheet.cell(row=1, column=4).value = '수령인/처리현황'
+                        new_sheet.cell(row=1, column=5).value = '비고'
+                        now = time.localtime()
+                        idx = 2
+                        for tv_nm in um_resultT.get_children():
+                            new_sheet.cell(row=idx, column=1).value = um_resultT.set(tv_nm, "#1")
+                            new_sheet.cell(row=idx, column=2).value = um_resultT.set(tv_nm, "#2")
+                            new_sheet.cell(row=idx, column=3).value = um_resultT.set(tv_nm, "#3")
+                            new_sheet.cell(row=idx, column=4).value = um_resultT.set(tv_nm, "#4")
+                            new_sheet.cell(row=idx, column=5).value = um_resultT.set(tv_nm, "#5")
+                            idx += 1
 
-                messagebox.showinfo("작업 완료", "성공: " + str(s_cnt) + " 경고: " + str(a_cnt) + " 실패: " + str(f_cnt))
+                        new_workbook.save(str(now.tm_year) + str(now.tm_mon) + str(now.tm_mday) + str(now.tm_hour) + str(now.tm_min) + str(now.tm_sec) + ".xlsx")
 
-                if x_iv.get():
-                    new_workbook = openpyxl.Workbook()
-                    new_sheet = new_workbook.active
-                    new_sheet.cell(row=1, column=1).value = '#'
-                    new_sheet.cell(row=1, column=2).value = '성명'
-                    new_sheet.cell(row=1, column=3).value = '등기번호'
-                    new_sheet.cell(row=1, column=4).value = '수령인/처리현황'
-                    new_sheet.cell(row=1, column=5).value = '비고'
-                    now = time.localtime()
-                    idx = 2
-                    for tv_nm in um_resultT.get_children():
-                        new_sheet.cell(row=idx, column=1).value = um_resultT.set(tv_nm, "#1")
-                        new_sheet.cell(row=idx, column=2).value = um_resultT.set(tv_nm, "#2")
-                        new_sheet.cell(row=idx, column=3).value = um_resultT.set(tv_nm, "#3")
-                        new_sheet.cell(row=idx, column=4).value = um_resultT.set(tv_nm, "#4")
-                        new_sheet.cell(row=idx, column=5).value = um_resultT.set(tv_nm, "#5")
-                        idx += 1
-
-                    new_workbook.save(str(now.tm_year) + str(now.tm_mon) + str(now.tm_mday) + str(now.tm_hour) + str(now.tm_min) + str(now.tm_sec) + ".xlsx")
+                    messagebox.showinfo("작업 완료", "성공: " + str(s_cnt) + " 경고: " + str(a_cnt) + " 실패: " + str(f_cnt))
+                except:
+                    messagebox.showinfo("Error! 작업 도중 예외가 발생하였습니다.")
 
         dataC = tk.Toplevel(resultC, padx=5, pady=5)
         dataC.title("데이터 불러오기")
@@ -518,6 +520,8 @@ def result():
                 name = str(data[1])[4:-5].split("<br/>")[0]
                 date = str(data[1])[4:-5].split("<br/>")[1]
                 status = re.sub("\(.*\)", '', data[3].get_text())
+                s_status = ""
+                r_status = ""
 
                 if (status == "배달완료" and data[3].get_text().find('반송배달') < 0) or status == "교부":
                     try:
