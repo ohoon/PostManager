@@ -213,6 +213,29 @@ def result():
                     webbrowser.open("https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=" + str(
                         um_resultT.set(um_resultT.focus(), "#3")) + "&displayHeader=N")
 
+            def _to_excel():
+                try:
+                    new_workbook = openpyxl.Workbook()
+                    new_sheet = new_workbook.active
+                    new_sheet.cell(row=1, column=1).value = '#'
+                    new_sheet.cell(row=1, column=2).value = '성명'
+                    new_sheet.cell(row=1, column=3).value = '등기번호'
+                    new_sheet.cell(row=1, column=4).value = '수령인/처리현황'
+                    new_sheet.cell(row=1, column=5).value = '비고'
+                    now = time.localtime()
+                    idx = 2
+                    for tv_nm in um_resultT.get_children():
+                        new_sheet.cell(row=idx, column=1).value = um_resultT.set(tv_nm, "#1")
+                        new_sheet.cell(row=idx, column=2).value = um_resultT.set(tv_nm, "#2")
+                        new_sheet.cell(row=idx, column=3).value = um_resultT.set(tv_nm, "#3")
+                        new_sheet.cell(row=idx, column=4).value = um_resultT.set(tv_nm, "#4")
+                        new_sheet.cell(row=idx, column=5).value = um_resultT.set(tv_nm, "#5")
+                        idx += 1
+                    new_workbook.save(str(now.tm_year) + str(now.tm_mon) + str(now.tm_mday) + str(now.tm_hour) + str(now.tm_min) + str(now.tm_sec) + ".xlsx")
+                    messagebox.showinfo("내보내기 성공", str(now.tm_year) + str(now.tm_mon) + str(now.tm_mday) + str(now.tm_hour) + str(now.tm_min) + str(now.tm_sec) + ".xlsx")
+                except:
+                    messagebox.showinfo("Error!", "내보내기에 실패했습니다.")
+
             if not fileE.get():
                 messagebox.showinfo("Error!", "명단 파일을 첨부하세요.")
             elif not sheetC.get():
@@ -222,7 +245,7 @@ def result():
             else:
                 um_resultC = tk.Toplevel(dataC)
                 um_resultC.title("마스킹 해제 결과")
-                um_resultC.geometry("400x307+465+300")
+                um_resultC.geometry("400x330+465+300")
                 um_resultC.resizable(False, False)
                 um_resultC.lift()
                 um_resultT = tkinter.ttk.Treeview(um_resultC, columns=["", "", "", "", ""], height=14)
@@ -248,6 +271,8 @@ def result():
                 um_resultT.tag_configure('success', background='#B7F0B1')
                 um_resultT.tag_configure('fail', background='#F15F5F')
                 um_resultT.tag_configure('alert', background='#F2CB61')
+                um_toexcel = tk.Button(um_resultC, text="to Excel", padx=175, command=_to_excel)
+                um_toexcel.grid(column=0, columnspan=2, row=1)
                 sheet = excel[sheetC.get()]
 
                 index = 0
@@ -290,7 +315,7 @@ def result():
                                         WebDriverWait(driver, 5).until(EC.alert_is_present())
                                         Alert(driver).accept()
                                         continue
-                                    except NoSuchWindowException or TimeoutException:
+                                    except:
                                         um_pnum = tv_nm
                                         um_status = totalT.set(tv_nm, "#3")
                                         swt = True
@@ -326,7 +351,7 @@ def result():
                                                 time.sleep(5)
                                                 driver.close()
                                                 break
-                                            except TimeoutException:
+                                            except:
                                                 print("print error")
                                         else:
                                             driver.close()
@@ -339,29 +364,10 @@ def result():
                             driver.close()
                             driver.switch_to.window(main_window_handle)
                             driver.close()
-                    if x_iv.get():
-                        new_workbook = openpyxl.Workbook()
-                        new_sheet = new_workbook.active
-                        new_sheet.cell(row=1, column=1).value = '#'
-                        new_sheet.cell(row=1, column=2).value = '성명'
-                        new_sheet.cell(row=1, column=3).value = '등기번호'
-                        new_sheet.cell(row=1, column=4).value = '수령인/처리현황'
-                        new_sheet.cell(row=1, column=5).value = '비고'
-                        now = time.localtime()
-                        idx = 2
-                        for tv_nm in um_resultT.get_children():
-                            new_sheet.cell(row=idx, column=1).value = um_resultT.set(tv_nm, "#1")
-                            new_sheet.cell(row=idx, column=2).value = um_resultT.set(tv_nm, "#2")
-                            new_sheet.cell(row=idx, column=3).value = um_resultT.set(tv_nm, "#3")
-                            new_sheet.cell(row=idx, column=4).value = um_resultT.set(tv_nm, "#4")
-                            new_sheet.cell(row=idx, column=5).value = um_resultT.set(tv_nm, "#5")
-                            idx += 1
-
-                        new_workbook.save(str(now.tm_year) + str(now.tm_mon) + str(now.tm_mday) + str(now.tm_hour) + str(now.tm_min) + str(now.tm_sec) + ".xlsx")
 
                     messagebox.showinfo("작업 완료", "성공: " + str(s_cnt) + " 경고: " + str(a_cnt) + " 실패: " + str(f_cnt))
                 except:
-                    messagebox.showinfo("Error! 작업 도중 예외가 발생하였습니다.")
+                    messagebox.showinfo("Error!", "작업 도중 예외가 발생하였습니다.")
 
         dataC = tk.Toplevel(resultC, padx=5, pady=5)
         dataC.title("데이터 불러오기")
@@ -397,8 +403,6 @@ def result():
         optionL.grid(column=0, row=3)
         printCB = tk.Checkbutton(dataC, text="프린트", font="함초롬돋움 8", variable=p_iv)
         printCB.grid(column=1, row=3)
-        printCB = tk.Checkbutton(dataC, text="to xslx", font="함초롬돋움 8", variable=x_iv)
-        printCB.grid(column=2, columnspan=2, row=3)
         dataB = tk.Button(dataC, text="마스킹 해제", padx=30, pady=5, command=unmask)
         dataB.grid(column=0, columnspan=4, row=4)
 
