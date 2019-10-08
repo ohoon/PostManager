@@ -7,8 +7,6 @@ from selenium import webdriver
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
-from selenium.common.exceptions import NoSuchWindowException
 import time
 import tkinter as tk
 import tkinter.ttk
@@ -307,7 +305,7 @@ def result():
                                 if totalT.set(tv_nm, "#2") == msk_nm:
                                     driver.execute_script('SetExpCookie("TraceCnt","0",10);')
                                     elem = driver.find_element_by_name('senderNm_masking')
-                                    elem.send_keys("치")
+                                    elem.send_keys(sndE.get()[1])
                                     elem = driver.find_element_by_name('receverNm_masking')
                                     elem.send_keys(ex_nm[1])
                                     driver.execute_script("return verifyNms(event);")
@@ -371,7 +369,7 @@ def result():
 
         dataC = tk.Toplevel(resultC, padx=5, pady=5)
         dataC.title("데이터 불러오기")
-        dataC.geometry("250x142+200+300")
+        dataC.geometry("250x160+200+300")
         dataC.resizable(False, False)
         dataC.lift()
 
@@ -397,14 +395,20 @@ def result():
         nmcolCB = tk.Checkbutton(dataC, text="첫 행 포함", font="함초롬돋움 8", variable=n_iv)
         nmcolCB.grid(column=2, columnspan=2, row=2)
 
+        sndL = tk.Label(dataC, text="보내는 이", font="함초롬돋움 10")
+        sndL.grid(column=0, row=3)
+        sndE = tk.Entry(dataC, width=13)
+        sndE.grid(column=1, row=3, padx=3)
+        snd_exL = tk.Label(dataC, text="ex) 조치원읍사무소", font="함초롬돋움 7")
+        snd_exL.grid(column=2, columnspan=2, row=3)
+
         p_iv = tk.IntVar()
-        x_iv = tk.IntVar()
         optionL = tk.Label(dataC, text="기타 기능", font="함초롬돋움 10")
-        optionL.grid(column=0, row=3)
+        optionL.grid(column=0, row=4)
         printCB = tk.Checkbutton(dataC, text="프린트", font="함초롬돋움 8", variable=p_iv)
-        printCB.grid(column=1, row=3)
+        printCB.grid(column=1, row=4)
         dataB = tk.Button(dataC, text="마스킹 해제", padx=30, pady=5, command=unmask)
-        dataB.grid(column=0, columnspan=4, row=4)
+        dataB.grid(column=0, columnspan=4, row=5)
 
     try:
         fst = int(firstE.get())
