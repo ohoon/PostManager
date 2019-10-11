@@ -7,6 +7,8 @@ from selenium import webdriver
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchWindowException
 import time
 import tkinter as tk
 import tkinter.ttk
@@ -144,6 +146,39 @@ def result():
             # reverse sort next time
             tv.heading(col, command=lambda: _sort_column(tv, col, not reverse))
 
+    def _to_excel(table, option):
+        try:
+            new_workbook = openpyxl.Workbook()
+            new_sheet = new_workbook.active
+            new_sheet.cell(row=1, column=1).value = '#'
+            new_sheet.cell(row=1, column=2).value = '성명'
+            new_sheet.cell(row=1, column=3).value = '등기번호'
+            new_sheet.cell(row=1, column=4).value = '수령인/처리현황'
+            new_sheet.cell(row=1, column=5).value = '비고'
+            now = time.localtime()
+            idx = 2
+            for tv_nm in table.get_children():
+                if option:
+                    new_sheet.cell(row=idx, column=1).value = table.set(tv_nm, "#1")
+                    new_sheet.cell(row=idx, column=2).value = table.set(tv_nm, "#2")
+                    new_sheet.cell(row=idx, column=3).value = table.set(tv_nm, "#3")
+                    new_sheet.cell(row=idx, column=4).value = table.set(tv_nm, "#4")
+                    new_sheet.cell(row=idx, column=5).value = table.set(tv_nm, "#5")
+                else:
+                    new_sheet.cell(row=idx, column=1).value = str(idx-1)
+                    new_sheet.cell(row=idx, column=2).value = table.set(tv_nm, "#2")
+                    new_sheet.cell(row=idx, column=3).value = table.set(tv_nm, "#1")
+                    new_sheet.cell(row=idx, column=4).value = table.set(tv_nm, "#3")
+                idx += 1
+            new_workbook.save(
+                str(now.tm_year) + str(now.tm_mon) + str(now.tm_mday) + str(now.tm_hour) + str(now.tm_min) + str(
+                    now.tm_sec) + ".xlsx")
+            messagebox.showinfo("내보내기 성공",
+                                str(now.tm_year) + str(now.tm_mon) + str(now.tm_mday) + str(now.tm_hour) + str(
+                                    now.tm_min) + str(now.tm_sec) + ".xlsx")
+        except:
+            messagebox.showinfo("Error!", "내보내기에 실패했습니다.")
+
     def database():
         global excel
 
@@ -166,18 +201,18 @@ def result():
                     fileE.configure(state="normal")
                     fileE.delete(0, len(fileE.get()))
                     fileE.configure(state="readonly")
-                    sheetC.configure(values=[])
-                    sheetC.set("")
+                    sheetCBox.configure(values=[])
+                    sheetCBox.set("")
                 except FileNotFoundError:
                     messagebox.showinfo(title="파일 열기 오류", message="존재하지 않는 파일입니다.")
                     fileE.configure(state="normal")
                     fileE.delete(0, len(fileE.get()))
                     fileE.configure(state="readonly")
-                    sheetC.configure(values=[])
-                    sheetC.set("")
+                    sheetCBox.configure(values=[])
+                    sheetCBox.set("")
                 else:
-                    sheetC.configure(values=excel.sheetnames)
-                    sheetC.current(0)
+                    sheetCBox.configure(values=excel.sheetnames)
+                    sheetCBox.current(0)
 
         def _nmcol(sv, sc, ncc):
             global excel
@@ -211,34 +246,13 @@ def result():
                     webbrowser.open("https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=" + str(
                         um_resultT.set(um_resultT.focus(), "#3")) + "&displayHeader=N")
 
-            def _to_excel():
-                try:
-                    new_workbook = openpyxl.Workbook()
-                    new_sheet = new_workbook.active
-                    new_sheet.cell(row=1, column=1).value = '#'
-                    new_sheet.cell(row=1, column=2).value = '성명'
-                    new_sheet.cell(row=1, column=3).value = '등기번호'
-                    new_sheet.cell(row=1, column=4).value = '수령인/처리현황'
-                    new_sheet.cell(row=1, column=5).value = '비고'
-                    now = time.localtime()
-                    idx = 2
-                    for tv_nm in um_resultT.get_children():
-                        new_sheet.cell(row=idx, column=1).value = um_resultT.set(tv_nm, "#1")
-                        new_sheet.cell(row=idx, column=2).value = um_resultT.set(tv_nm, "#2")
-                        new_sheet.cell(row=idx, column=3).value = um_resultT.set(tv_nm, "#3")
-                        new_sheet.cell(row=idx, column=4).value = um_resultT.set(tv_nm, "#4")
-                        new_sheet.cell(row=idx, column=5).value = um_resultT.set(tv_nm, "#5")
-                        idx += 1
-                    new_workbook.save(str(now.tm_year) + str(now.tm_mon) + str(now.tm_mday) + str(now.tm_hour) + str(now.tm_min) + str(now.tm_sec) + ".xlsx")
-                    messagebox.showinfo("내보내기 성공", str(now.tm_year) + str(now.tm_mon) + str(now.tm_mday) + str(now.tm_hour) + str(now.tm_min) + str(now.tm_sec) + ".xlsx")
-                except:
-                    messagebox.showinfo("Error!", "내보내기에 실패했습니다.")
+
 
             if not fileE.get():
                 messagebox.showinfo("Error!", "명단 파일을 첨부하세요.")
-            elif not sheetC.get():
+            elif not sheetCBox.get():
                 messagebox.showinfo("Error!", "해당 시트를 찾을 수 없습니다.")
-            elif not nmcolC.get():
+            elif not nmcolCBox.get():
                 messagebox.showinfo("Error!", "해당 열을 불러올 수 없습니다.")
             else:
                 um_resultC = tk.Toplevel(dataC)
@@ -269,18 +283,18 @@ def result():
                 um_resultT.tag_configure('success', background='#B7F0B1')
                 um_resultT.tag_configure('fail', background='#F15F5F')
                 um_resultT.tag_configure('alert', background='#F2CB61')
-                um_toexcel = tk.Button(um_resultC, text="to Excel", padx=175, command=_to_excel)
+                um_toexcel = tk.Button(um_resultC, text="to Excel", padx=175, command=lambda: _to_excel(um_resultT, True))
                 um_toexcel.grid(column=0, columnspan=2, row=1)
-                sheet = excel[sheetC.get()]
 
+                sheet = excel[sheetCBox.get()]
                 index = 0
                 s_cnt = 0
                 a_cnt = 0
                 f_cnt = 0
                 n_data = []
                 s_list = []
-                nm_col = cache[nmcolC.current()].column
-                nm_row = cache[nmcolC.current()].row
+                nm_col = cache[nmcolCBox.current()].column
+                nm_row = cache[nmcolCBox.current()].row
                 if not n_iv.get():
                     nm_row += 1
                 for i in range(nm_row, sheet.max_row + 1):
@@ -310,7 +324,7 @@ def result():
                                     elem.send_keys(ex_nm[1])
                                     driver.execute_script("return verifyNms(event);")
                                     try:
-                                        WebDriverWait(driver, 5).until(EC.alert_is_present())
+                                        WebDriverWait(driver, 10).until(EC.alert_is_present())
                                         Alert(driver).accept()
                                         continue
                                     except:
@@ -344,7 +358,7 @@ def result():
                                         if p_iv.get():
                                             driver.execute_script("window.print();")
                                             try:
-                                                WebDriverWait(driver, 5).until(EC.alert_is_present())
+                                                WebDriverWait(driver, 10).until(EC.alert_is_present())
                                                 Alert(driver).accept()
                                                 time.sleep(5)
                                                 driver.close()
@@ -381,19 +395,19 @@ def result():
         fileB.grid(column=3, row=0)
 
         h_sv = tk.StringVar()
-        h_sv.trace("w", lambda nm, index, mode, sv=h_sv: _nmcol(sv, sheetC, nmcolC))
+        h_sv.trace("w", lambda nm, index, mode, sv=h_sv: _nmcol(sv, sheetCBox, nmcolCBox))
         sheetL = tk.Label(dataC, text="시트 선택", font="함초롬돋움 10")
         sheetL.grid(column=0, row=1)
-        sheetC = tkinter.ttk.Combobox(dataC, width=13, state="readonly", textvariable=h_sv)
-        sheetC.grid(column=1, columnspan=2, row=1, padx=3)
+        sheetCBox = tkinter.ttk.Combobox(dataC, width=13, state="readonly", textvariable=h_sv)
+        sheetCBox.grid(column=1, columnspan=2, row=1, padx=3)
 
         n_iv = tk.IntVar()
         nmcolL = tk.Label(dataC, text="이름 열", font="함초롬돋움 10")
         nmcolL.grid(column=0, row=2)
-        nmcolC = tkinter.ttk.Combobox(dataC, width=10, state="readonly")
-        nmcolC.grid(column=1, row=2, padx=3, sticky="w")
-        nmcolCB = tk.Checkbutton(dataC, text="첫 행 포함", font="함초롬돋움 8", variable=n_iv)
-        nmcolCB.grid(column=2, columnspan=2, row=2)
+        nmcolCBox = tkinter.ttk.Combobox(dataC, width=10, state="readonly")
+        nmcolCBox.grid(column=1, row=2, padx=3, sticky="w")
+        nmcolCBtn = tk.Checkbutton(dataC, text="첫 행 포함", font="함초롬돋움 8", variable=n_iv)
+        nmcolCBtn.grid(column=2, columnspan=2, row=2)
 
         sndL = tk.Label(dataC, text="보내는 이", font="함초롬돋움 10")
         sndL.grid(column=0, row=3)
@@ -405,8 +419,8 @@ def result():
         p_iv = tk.IntVar()
         optionL = tk.Label(dataC, text="기타 기능", font="함초롬돋움 10")
         optionL.grid(column=0, row=4)
-        printCB = tk.Checkbutton(dataC, text="프린트", font="함초롬돋움 8", variable=p_iv)
-        printCB.grid(column=1, row=4)
+        printCBtn = tk.Checkbutton(dataC, text="프린트", font="함초롬돋움 8", variable=p_iv)
+        printCBtn.grid(column=1, row=4)
         dataB = tk.Button(dataC, text="마스킹 해제", padx=30, pady=5, command=unmask)
         dataB.grid(column=0, columnspan=4, row=5)
 
@@ -424,18 +438,18 @@ def result():
         mainC.iconify()
         resultC = tk.Toplevel(mainC)
         resultC.title("조회 결과")
-        resultC.geometry("1146x472+100+300")
+        resultC.geometry("1146x475+100+300")
         resultC.resizable(0, 0)
         resultC.lift()
 
         succF = tk.Frame(resultC, bd=3)
         succF.grid(column=0, row=0)
         succL = tk.Label(succF, text="배달완료", font="함초롬돋움 12")
-        succL.grid(column=0, columnspan=3, row=0)
+        succL.grid(column=0, columnspan=4, row=0)
 
         s_scroll = tk.Scrollbar(succF)
         succT = tkinter.ttk.Treeview(succF, columns=["", "", "", ""], height=18, yscrollcommand=s_scroll.set)
-        succT.grid(column=0, columnspan=2, row=1)
+        succT.grid(column=0, columnspan=3, row=1)
         succT["show"] = "headings"
         succT.column("#1", width=120, anchor="center")
         succT.heading("#1", text="등기번호", anchor="center", command=lambda: _sort_column(succT, "#1", False))
@@ -446,25 +460,27 @@ def result():
         succT.column("#4", width=80, anchor="center")
         succT.heading("#4", text="수령일자", anchor="center", command=lambda: _sort_column(succT, "#4", False))
         succT.bind('<<TreeviewOpen>>', _pop_up_s)
-        s_scroll.grid(column=2, row=1, sticky="nws")
+        s_scroll.grid(column=3, row=1, sticky="nws")
         s_scroll["command"] = succT.yview
 
-        s_srchC = tkinter.ttk.Combobox(succF, width=10, values=["등기번호", "성명", "수령인", "수령일자"], state="readonly")
-        s_srchC.grid(column=0, row=2, sticky="e")
-        s_srchC.set("목록 선택")
+        s_srchCBox = tkinter.ttk.Combobox(succF, width=10, values=["등기번호", "성명", "수령인", "수령일자"], state="readonly")
+        s_srchCBox.grid(column=0, row=2)
+        s_srchCBox.set("목록 선택")
         s_sv = tk.StringVar()
-        s_sv.trace("w", lambda nm, index, mode, sv=s_sv: _search(sv, succT, s_srchC, s_srchE))
-        s_srchE = tk.Entry(succF, width=37, textvariable=s_sv)
-        s_srchE.grid(column=1, row=2, sticky="w")
+        s_sv.trace("w", lambda nm, index, mode, sv=s_sv: _search(sv, succT, s_srchCBox, s_srchE))
+        s_srchE = tk.Entry(succF, width=27, textvariable=s_sv)
+        s_srchE.grid(column=1, row=2)
+        s_toexcel = tk.Button(succF, text="to Excel", padx=10, command=lambda: _to_excel(succT, False))
+        s_toexcel.grid(column=2, row=2)
 
         retrnF = tk.Frame(resultC, bd=3)
         retrnF.grid(column=1, row=0)
         retrnL = tk.Label(retrnF, text="미배달", font="함초롬돋움 12")
-        retrnL.grid(column=0, columnspan=3, row=0)
+        retrnL.grid(column=0, columnspan=4, row=0)
 
         r_scroll = tk.Scrollbar(retrnF)
         retrnT = tkinter.ttk.Treeview(retrnF, columns=["", "", "", ""], height=18, yscrollcommand=r_scroll.set)
-        retrnT.grid(column=0, columnspan=2, row=1)
+        retrnT.grid(column=0, columnspan=3, row=1)
         retrnT.yview()
         retrnT["show"] = "headings"
         retrnT.column("#1", width=120, anchor="center")
@@ -476,25 +492,27 @@ def result():
         retrnT.column("#4", width=80, anchor="center")
         retrnT.heading("#4", text="처리일자", anchor="center", command=lambda: _sort_column(retrnT, "#4", False))
         retrnT.bind('<<TreeviewOpen>>', _pop_up_r)
-        r_scroll.grid(column=2, row=1, sticky="nws")
+        r_scroll.grid(column=3, row=1, sticky="nws")
         r_scroll["command"] = retrnT.yview
 
-        r_srchC = tkinter.ttk.Combobox(retrnF, width=10, values=["등기번호", "성명", "처리현황", "처리일자"], state="readonly")
-        r_srchC.grid(column=0, row=2, sticky="e")
-        r_srchC.set("목록 선택")
+        r_srchCBox = tkinter.ttk.Combobox(retrnF, width=10, values=["등기번호", "성명", "처리현황", "처리일자"], state="readonly")
+        r_srchCBox.grid(column=0, row=2)
+        r_srchCBox.set("목록 선택")
         r_sv = tk.StringVar()
-        r_sv.trace("w", lambda nm, index, mode, sv=r_sv: _search(sv, retrnT, r_srchC, r_srchE))
-        r_srchE = tk.Entry(retrnF, width=37, textvariable=r_sv)
-        r_srchE.grid(column=1, row=2, sticky="w")
+        r_sv.trace("w", lambda nm, index, mode, sv=r_sv: _search(sv, retrnT, r_srchCBox, r_srchE))
+        r_srchE = tk.Entry(retrnF, width=27, textvariable=r_sv)
+        r_srchE.grid(column=1, row=2)
+        r_toexcel = tk.Button(retrnF, text="to Excel", padx=10, command=lambda: _to_excel(retrnT, False))
+        r_toexcel.grid(column=2, row=2)
 
         totalF = tk.Frame(resultC, bd=3)
         totalF.grid(column=2, row=0)
         totalL = tk.Label(totalF, text="통합", font="함초롬돋움 12")
-        totalL.grid(column=0, columnspan=3, row=0)
+        totalL.grid(column=0, columnspan=4, row=0)
 
         t_scroll = tk.Scrollbar(totalF)
         totalT = tkinter.ttk.Treeview(totalF, columns=["", "", "", ""], height=18, yscrollcommand=t_scroll.set)
-        totalT.grid(column=0, columnspan=2, row=1)
+        totalT.grid(column=0, columnspan=3, row=1)
         totalT.yview()
         totalT["show"] = "headings"
         totalT.column("#1", width=120, anchor="center")
@@ -506,16 +524,18 @@ def result():
         totalT.column("#4", width=80, anchor="center")
         totalT.heading("#4", text="수령/처리일", anchor="center", command=lambda: _sort_column(totalT, "#4", False))
         totalT.bind('<<TreeviewOpen>>', _pop_up_t)
-        t_scroll.grid(column=2, row=1, sticky="nws")
+        t_scroll.grid(column=3, row=1, sticky="nws")
         t_scroll["command"] = totalT.yview
 
-        t_srchC = tkinter.ttk.Combobox(totalF, width=10, values=["등기번호", "성명", "수령인/처리현황", "수령/처리일"], state="readonly")
-        t_srchC.grid(column=0, row=2, sticky="e")
-        t_srchC.set("목록 선택")
+        t_srchCBox = tkinter.ttk.Combobox(totalF, width=10, values=["등기번호", "성명", "수령인/처리현황", "수령/처리일"], state="readonly")
+        t_srchCBox.grid(column=0, row=2)
+        t_srchCBox.set("목록 선택")
         t_sv = tk.StringVar()
-        t_sv.trace("w", lambda nm, index, mode, sv=t_sv: _search(sv, totalT, t_srchC, t_srchE))
-        t_srchE = tk.Entry(totalF, width=37, textvariable=t_sv)
-        t_srchE.grid(column=1, row=2, sticky="w")
+        t_sv.trace("w", lambda nm, index, mode, sv=t_sv: _search(sv, totalT, t_srchCBox, t_srchE))
+        t_srchE = tk.Entry(totalF, width=27, textvariable=t_sv)
+        t_srchE.grid(column=1, row=2)
+        t_toexcel = tk.Button(totalF, text="to Excel", padx=10, command=lambda: _to_excel(totalT, False))
+        t_toexcel.grid(column=2, row=2)
 
         count = 0
         rcount = 0
